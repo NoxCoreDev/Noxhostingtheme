@@ -44,7 +44,7 @@ const LoginCheckpointContainer = () => {
                 />
             </div>
             <div css={tw`mt-6`}>
-                <Button size={'xlarge'} type={'submit'} disabled={isSubmitting} isLoading={isSubmitting}>
+                <Button color={'blue'} size={'xlarge'} type={'submit'} disabled={isSubmitting} isLoading={isSubmitting}>
                     Continue
                 </Button>
             </div>

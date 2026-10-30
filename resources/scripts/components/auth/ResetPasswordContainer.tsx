@@ -79,7 +79,7 @@ export default ({ match, location }: RouteComponentProps<{ token: string }>) => 
                         <Field light label={'Confirm New Password'} name={'passwordConfirmation'} type={'password'} />
                     </div>
                     <div css={tw`mt-6`}>
-                        <Button size={'xlarge'} type={'submit'} disabled={isSubmitting} isLoading={isSubmitting}>
+                        <Button color={'blue'} size={'xlarge'} type={'submit'} disabled={isSubmitting} isLoading={isSubmitting}>
                             Reset Password
                         </Button>
                     </div>

@@ -72,7 +72,7 @@ export default () => {
                     <Spinner size={'large'} centered />
                 )
             ) : (
-                <>
+                <div css={tw`md:flex md:items-start md:gap-6`}>
                     <CSSTransition timeout={150} classNames={'fade'} appear in>
                         <SubNavigation>
                             <div>
@@ -103,6 +103,7 @@ export default () => {
                     <InstallListener />
                     <TransferListener />
                     <WebsocketHandler />
+                    <div css={tw`flex-1 min-w-0`}>
                     {inConflictState && (!rootAdmin || (rootAdmin && !location.pathname.endsWith(`/server/${id}`))) ? (
                         <ConflictStateRenderer />
                     ) : (
@@ -121,7 +122,8 @@ export default () => {
                             </TransitionRouter>
                         </ErrorBoundary>
                     )}
-                </>
+                    </div>
+                </div>
             )}
         </React.Fragment>
     );

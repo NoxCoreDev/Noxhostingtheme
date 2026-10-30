@@ -33,7 +33,7 @@ export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => 
         {title && <h2 css={tw`text-3xl text-center text-neutral-100 font-medium py-4`}>{title}</h2>}
         <FlashMessageRender css={tw`mb-2 px-1`} />
         <Form {...props} ref={ref}>
-            <div css={tw`md:flex w-full bg-neutral-800 shadow-lg rounded-lg border border-neutral-700 p-6 md:pl-0 mx-1`}>
+            <div css={tw`md:flex w-full bg-navy-800 shadow-lg rounded-lg border border-navy-700 p-6 md:pl-0 mx-1`}>
                 <div css={tw`flex-none select-none mb-6 md:mb-0 self-center`}>
                     <img src={'/assets/svgs/nox-hosting.svg'} css={tw`block w-48 md:w-64 mx-auto`} />
                 </div>
@@ -50,7 +50,7 @@ export default forwardRef<HTMLFormElement, Props>(({ title, ...props }, ref) => 
             >
                 Pterodactyl Software
             </a>
-            {' · '}NOX HOSTING by NoxCoreDev
+            {' · '}Noxhosting theme - &copy; 2026 NoxCoreDev
         </p>
     </Container>
 ));
