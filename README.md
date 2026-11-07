@@ -168,3 +168,13 @@ The separate [`LICENSE-NOX-HOSTING.md`](./LICENSE-NOX-HOSTING.md) applies to ori
 - [Wings installation](https://pterodactyl.io/wings/1.0/installing.html)
 - [Community support](https://discord.gg/pterodactyl)
 - [NOX HOSTING source repository](https://github.com/NoxCoreDev/Noxhostingtheme)
+
+---
+
+## NOX HOSTING Links
+
+**Navigation:** [Privacy Policy](https://noxcoredev.is-a.dev/privacy-policy) · [Terms](https://noxcoredev.is-a.dev/terms) · [Legal](https://noxcoredev.is-a.dev/legal) · [Contact](https://noxcoredev.is-a.dev/contact)
+
+**Connect:** [GitHub](https://github.com/NoxCoreDev) · [LinkedIn](https://www.linkedin.com/in/NoxCoreDev) · [X](https://www.x.com/NoxPrimeeeinc) · [Facebook](https://www.facebook.com/share/1VZrh6qJQD) · [Instagram](https://www.instagram.com/noxprimeeeinc?vrfl=NmM3ZWFsd2t3cXdm) · [YouTube](https://youtube.com/@noxcoredev?si=YGqUJHTXHkSHr8lm) · [Telegram](https://t.me/Noxmodai) · [WhatsApp](https://wa.me/224623752938)
+
+© Power by NoxCoreDev
