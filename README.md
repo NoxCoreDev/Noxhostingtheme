@@ -1,25 +1,33 @@
-# NOX HOSTING Panel
+# NOX HOSTING
 
-NOX HOSTING is a customized fork of the **Pterodactyl Panel**. It is the web control panel for managing game servers; it is not a standalone theme package, a hosting service, or a one-click installer. To actually run game servers, install and configure **Wings** on a Linux node as well.
+### Game Server Management Panel
 
-This repository is based on Pterodactyl Panel **1.15.2**. The NOX HOSTING frontend assets are included in the repository, so Node.js is not required for a normal production installation. This project is independent and is not affiliated with Pterodactyl Software.
+NOX HOSTING is a web control panel for setting up and managing game servers on Linux infrastructure. Administrators manage nodes and users from the Panel; assigned users can manage their servers through the web interface.
 
-> **Important:** This repository currently has no published GitHub releases. The steps below install the source on the default `main` branch. Review the repository and pin the commit you install before using it for a production service. Do not download the upstream Pterodactyl `panel.tar.gz` if you want the NOX HOSTING customizations; that archive does not contain this fork's changes.
+The Panel is the management dashboard. Game server processes run on Linux nodes through Docker and **Wings**. Installing the Panel by itself does not install Wings or start game servers.
 
-## What you need
+## How it works
 
-- A fresh Linux VPS with root or `sudo` access. Ubuntu 24.04 is used in the example below; the upstream Pterodactyl documentation also lists other supported distributions and versions.
-- A domain name pointed to the VPS, with ports 80 and 443 reachable for the web panel. Wings and game servers need their own ports opened as described in the relevant documentation.
-- PHP 8.2 or 8.3 and the required extensions, MariaDB or MySQL, Redis, a web server, Git, and Composer 2.
-- A separate Linux node (or a suitable additional setup on the same VPS) running Docker and Wings if you want to create and run game servers.
+- **NOX HOSTING Panel:** the website administrators and users sign in to.
+- **Linux node:** the machine that runs game server containers with Docker and Wings. A node can be a separate server or, for a small setup, the same machine as the Panel if it has enough resources and supports Docker.
+- **Domain and HTTPS:** point a domain to the Panel VPS and configure a valid TLS certificate before exposing the Panel publicly.
 
-Pterodactyl is server software for administrators familiar with Linux. See the [official Panel installation guide](https://pterodactyl.io/panel/1.0/getting_started.html) and the [Wings installation guide](https://pterodactyl.io/wings/1.0/installing.html) before deploying it publicly.
+This project is built for the Pterodactyl Panel **1.15.2** application base and its 1.x Wings setup. The NOX HOSTING frontend assets are included in this repository, so Node.js is not needed for a standard production installation.
+
+> **Release note:** this repository currently has no published GitHub releases. Install from the source repository below, review the source, and pin the commit you deploy. Use this repository—not the upstream Panel's `panel.tar.gz`—to keep the NOX HOSTING changes.
+
+## Requirements
+
+- A fresh Linux VPS with root or `sudo` access. The example below uses Ubuntu 24.04.
+- A domain pointed to the Panel VPS. Allow ports 80 and 443 for web access; open only the node allocations and game-service ports you intend to use.
+- PHP 8.2 or 8.3 with the required extensions, MariaDB or MySQL, Redis, Nginx (or another supported web server), Git, and Composer 2.
+- Docker and Wings on each Linux node that will run game servers. Verify that the VPS provider supports Docker; KVM virtualization is the safest choice.
 
 ## Install the Panel on Ubuntu 24.04
 
-The commands below are a practical starting point for a new VPS. Replace `panel.example.com` and the database password with your own values. Run one command at a time and stop if a command reports an error.
+The following is a practical new-server installation path. Replace `panel.example.com` and the database password with your own values. Follow the steps one at a time and resolve any errors before continuing.
 
-### 1. Install the system dependencies
+### 1. Install the system packages
 
 ```bash
 sudo apt update
@@ -32,9 +40,9 @@ sudo apt install -y \
 sudo systemctl enable --now mariadb redis-server nginx php8.3-fpm
 ```
 
-The PHP CLI package supplies core extensions such as PDO, OpenSSL, Tokenizer, and POSIX on Ubuntu. Check the PHP version with `php -v`. Install Composer 2 from the [official Composer instructions](https://getcomposer.org/download/) if the package manager did not provide Composer 2.
+Check the installed versions with `php -v` and `composer --version`. Use Composer 2; if the Ubuntu package does not provide it, follow the [official Composer installation instructions](https://getcomposer.org/download/). The PHP CLI package supplies core extensions such as PDO, OpenSSL, Tokenizer, and POSIX on Ubuntu.
 
-### 2. Create the database
+### 2. Create a database and database user
 
 Open the MariaDB shell:
 
@@ -42,7 +50,7 @@ Open the MariaDB shell:
 sudo mariadb
 ```
 
-Create a database and a dedicated account. Replace the example password with a unique, long password, then exit the MariaDB shell:
+Create a database and a dedicated account. Replace the example password with a unique, long password:
 
 ```sql
 CREATE DATABASE panel;
@@ -52,7 +60,7 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-### 3. Download this fork and install PHP dependencies
+### 3. Download NOX HOSTING and install PHP dependencies
 
 ```bash
 sudo mkdir -p /var/www/pterodactyl
@@ -65,11 +73,11 @@ composer install --no-dev --optimize-autoloader
 chmod -R 755 storage/* bootstrap/cache/
 ```
 
-If you are deploying a reviewed commit instead of the current branch, check out that commit before running Composer. Do not use `git pull` blindly on a live installation; back up first and follow the upstream upgrade instructions.
+For a production deployment, check out the reviewed commit you intend to run before completing installation. Back up the database and `.env` before any future upgrade; do not blindly pull new code onto a live server.
 
-### 4. Configure the application and database
+### 4. Configure the Panel
 
-Generate the application key **only for a brand-new installation**, then complete the interactive setup:
+Generate the application key **only on a brand-new installation**, then run the interactive setup commands:
 
 ```bash
 php artisan key:generate --force
@@ -78,11 +86,11 @@ php artisan p:environment:database
 php artisan p:environment:mail
 ```
 
-Use `https://panel.example.com` as the application URL when prompted. Enter the database name `panel`, username `pterodactyl`, and the password created above. Configure SMTP if you need password resets or system email.
+Set the application URL to `https://panel.example.com`. Enter the database name `panel`, username `pterodactyl`, and the password created in step 2. Configure SMTP if you need password resets or system email.
 
-Back up the `APP_KEY` stored in `.env` together with your database backups. Never regenerate the key on an existing installation: encrypted data may become unreadable.
+Back up the `APP_KEY` in `.env` together with your database backups. Never regenerate this key on an existing installation: encrypted data may become unreadable.
 
-### 5. Create the database tables and administrator
+### 5. Create the tables and administrator account
 
 ```bash
 php artisan migrate --seed --force
@@ -91,29 +99,29 @@ php artisan p:user:make
 
 Follow the prompts to create the first administrator account.
 
-### 6. Set file permissions and configure HTTPS
+### 6. Configure file access, Nginx, and HTTPS
 
-For a standard Ubuntu Nginx installation, give the web-server account access to the Panel files:
+For a standard Ubuntu Nginx installation, set the Panel files to be readable by the web-server account:
 
 ```bash
 sudo chown -R www-data:www-data /var/www/pterodactyl
 ```
 
-Configure Nginx to serve `/var/www/pterodactyl/public`, use PHP-FPM 8.3, and enable HTTPS with a valid certificate for your domain. Follow the [official Nginx web-server configuration guide](https://pterodactyl.io/panel/1.0/webserver_configuration.html); create the certificate before enabling an SSL configuration. Verify your DNS points to the VPS and that ports 80 and 443 are allowed by both the VPS firewall and provider firewall.
+Configure Nginx to serve `/var/www/pterodactyl/public` through PHP-FPM 8.3 and to use a valid HTTPS certificate for your domain. Follow the [Nginx configuration guide](https://pterodactyl.io/panel/1.0/webserver_configuration.html); create the certificate before enabling an SSL configuration. Confirm that DNS points to the VPS and that ports 80 and 443 are allowed by both the VPS and provider firewalls.
 
 ### 7. Enable scheduled tasks and the queue worker
 
-Add the Panel scheduler to root's crontab by running `sudo crontab -e` and adding:
+Add the Panel scheduler to root's crontab. Open it with `sudo crontab -e` and add:
 
 ```cron
 * * * * * php /var/www/pterodactyl/artisan schedule:run >> /dev/null 2>&1
 ```
 
-Create `/etc/systemd/system/pteroq.service` with the following contents:
+Create `/etc/systemd/system/pteroq.service` with these contents:
 
 ```ini
 [Unit]
-Description=Pterodactyl Queue Worker
+Description=NOX HOSTING Panel Queue Worker
 After=redis-server.service
 
 [Service]
@@ -127,36 +135,36 @@ RestartSec=5s
 WantedBy=multi-user.target
 ```
 
-Enable the worker:
+Enable the queue worker:
 
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable --now pteroq.service
 ```
 
-The Panel should now be reachable at your configured domain. Check Nginx, PHP-FPM, Redis, and the queue worker logs if something does not start.
+The Panel should now be reachable at your configured domain. If it does not start, check the Nginx, PHP-FPM, Redis, and queue-worker logs.
 
-## Run game servers with Wings
+## Add game servers with Wings
 
-Installing the Panel alone does **not** start game servers. Install Docker and the matching Pterodactyl 1.x version of Wings on a Linux node, create that node in the Panel's administrator area, and apply its generated Wings configuration. Follow the [official Wings guide](https://pterodactyl.io/wings/1.0/installing.html) and the [Panel documentation](https://pterodactyl.io/panel/1.0/getting_started.html). Confirm that Docker is supported by your VPS provider; KVM virtualization is the safest choice. Open only the allocation and service ports you intend to use.
+To run game servers, install Docker and the compatible Wings 1.x service on a Linux node. In the Panel administrator area, create a node, copy its generated Wings configuration to that machine, and start Wings as a system service. Follow the [Wings installation guide](https://pterodactyl.io/wings/1.0/installing.html) and [Panel setup guide](https://pterodactyl.io/panel/1.0/getting_started.html). Make sure Docker works with your VPS provider's virtualization and open the required node and allocation ports.
 
 ## Optional: rebuild the frontend
 
-A normal server installation can use the compiled files already tracked under `public/assets`. Rebuild them only when developing or changing the frontend. The repository requires Node.js 22 or newer; from the repository directory, install the project's Yarn dependencies and run:
+The compiled frontend files are already tracked under `public/assets`; a normal installation does not need a frontend build. For development or frontend changes, use Node.js 22 or newer and Yarn from the repository directory:
 
 ```bash
 yarn install --frozen-lockfile
 yarn build:production
 ```
 
-## NOX HOSTING theme terms
+## Licensing and notices
 
-The NOX HOSTING design, artwork, logo, and theme changes are covered by [`LICENSE-NOX-HOSTING.md`](./LICENSE-NOX-HOSTING.md). The license permits free use of the theme on your own Pterodactyl Panel and requires keeping the **“NOX HOSTING by NoxCoreDev”** footer credit. It does not permit selling the theme or logo, removing the credit, or presenting the NOX HOSTING brand as your own. Pterodactyl and Laravel remain subject to their respective licenses; see [`NOTICE.md`](./NOTICE.md) and [`LICENSE.md`](./LICENSE.md).
+The separate [`LICENSE-NOX-HOSTING.md`](./LICENSE-NOX-HOSTING.md) applies to original NOX HOSTING work: its design, artwork, logo, theme, and NOX-authored code. It does **not** replace or relicense inherited or third-party code. The existing [`LICENSE.md`](./LICENSE.md) and [`NOTICE.md`](./NOTICE.md) remain separate and unchanged, preserving the legal notices for the underlying Panel and Laravel code. Other third-party components remain subject to their own applicable licenses. Nothing in this README claims NOX HOSTING authorship of third-party software.
 
-## Documentation and support
+## Documentation
 
-- [Pterodactyl Panel installation and configuration](https://pterodactyl.io/panel/1.0/getting_started.html)
-- [Pterodactyl Nginx configuration](https://pterodactyl.io/panel/1.0/webserver_configuration.html)
-- [Pterodactyl Wings installation](https://pterodactyl.io/wings/1.0/installing.html)
-- [Pterodactyl community and support](https://discord.gg/pterodactyl)
-- [This fork on GitHub](https://github.com/NoxCoreDev/Noxhostingtheme)
+- [Panel installation and configuration](https://pterodactyl.io/panel/1.0/getting_started.html)
+- [Nginx web-server configuration](https://pterodactyl.io/panel/1.0/webserver_configuration.html)
+- [Wings installation](https://pterodactyl.io/wings/1.0/installing.html)
+- [Community support](https://discord.gg/pterodactyl)
+- [NOX HOSTING source repository](https://github.com/NoxCoreDev/Noxhostingtheme)
