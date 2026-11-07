@@ -1,93 +1,162 @@
-<p align="center">
-  <a href="https://pterodactyl.io">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark.svg">
-      <img alt="Pterodactyl" src=".github/assets/logo-light.svg" height="72">
-    </picture>
-  </a>
-</p>
+# NOX HOSTING Panel
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/pterodactyl/panel/ci.yaml?label=Tests&style=for-the-badge&branch=1.0-develop)
-![Discord](https://img.shields.io/discord/122900397965705216?label=Discord&logo=Discord&logoColor=white&style=for-the-badge)
-![GitHub Releases](https://img.shields.io/github/downloads/pterodactyl/panel/latest/total?style=for-the-badge)
-![GitHub contributors](https://img.shields.io/github/contributors/pterodactyl/panel?style=for-the-badge)
+NOX HOSTING is a customized fork of the **Pterodactyl Panel**. It is the web control panel for managing game servers; it is not a standalone theme package, a hosting service, or a one-click installer. To actually run game servers, install and configure **Wings** on a Linux node as well.
 
-# Pterodactyl Panel
+This repository is based on Pterodactyl Panel **1.15.2**. The NOX HOSTING frontend assets are included in the repository, so Node.js is not required for a normal production installation. This project is independent and is not affiliated with Pterodactyl Software.
 
-Pterodactyl® is a free, open-source game server management panel built with PHP, React, and Go. Designed with security
-in mind, Pterodactyl runs all game servers in isolated Docker containers while exposing a beautiful and intuitive
-UI to end users.
+> **Important:** This repository currently has no published GitHub releases. The steps below install the source on the default `main` branch. Review the repository and pin the commit you install before using it for a production service. Do not download the upstream Pterodactyl `panel.tar.gz` if you want the NOX HOSTING customizations; that archive does not contain this fork's changes.
 
-Stop settling for less. Make game servers a first class citizen on your platform.
+## What you need
 
-## Pterodactyl v2 Beta is Out!
+- A fresh Linux VPS with root or `sudo` access. Ubuntu 24.04 is used in the example below; the upstream Pterodactyl documentation also lists other supported distributions and versions.
+- A domain name pointed to the VPS, with ports 80 and 443 reachable for the web panel. Wings and game servers need their own ports opened as described in the relevant documentation.
+- PHP 8.2 or 8.3 and the required extensions, MariaDB or MySQL, Redis, a web server, Git, and Composer 2.
+- A separate Linux node (or a suitable additional setup on the same VPS) running Docker and Wings if you want to create and run game servers.
 
-Pterodactyl v2.0.0-beta.1 is now available! The next major version introduces a modernized tech stack, a redesigned admin area, and an extension SDK built into the panel. It remains 100% free and open source under the MIT license.
+Pterodactyl is server software for administrators familiar with Linux. See the [official Panel installation guide](https://pterodactyl.io/panel/1.0/getting_started.html) and the [Wings installation guide](https://pterodactyl.io/wings/1.0/installing.html) before deploying it publicly.
 
-[![Watch: Introducing Pterodactyl v2](.github/assets/v2-video.jpg)](https://www.youtube.com/watch?v=1ER4kv0jVEU)
+## Install the Panel on Ubuntu 24.04
 
-- [Get started with v2](https://docs.pterodactyl.io/v2/panel/getting-started)
-- [Upgrade from v1](https://docs.pterodactyl.io/v2/upgrading/upgrading-from-v1)
-- [Release notes](https://github.com/pterodactyl/panel/releases/tag/v2.0.0-beta.1)
+The commands below are a practical starting point for a new VPS. Replace `panel.example.com` and the database password with your own values. Run one command at a time and stop if a command reports an error.
 
-Development happens on the [`2.0-develop`](https://github.com/pterodactyl/panel/tree/2.0-develop) branch. The v2 branch is currently in beta, while `1.0-develop` remains the current stable release line.
+### 1. Install the system dependencies
 
-![Image](https://cdn.pterodactyl.io/site-assets/pterodactyl_v1_demo.gif)
+```bash
+sudo apt update
+sudo apt upgrade -y
+sudo apt install -y \
+  ca-certificates curl git tar unzip composer nginx mariadb-server redis-server \
+  php8.3 php8.3-cli php8.3-common php8.3-gd php8.3-mysql php8.3-mbstring \
+  php8.3-bcmath php8.3-xml php8.3-curl php8.3-zip php8.3-fpm php8.3-opcache
 
-## Documentation
+sudo systemctl enable --now mariadb redis-server nginx php8.3-fpm
+```
 
-* [Panel Documentation](https://pterodactyl.io/panel/1.0/getting_started.html)
-* [Wings Documentation](https://pterodactyl.io/wings/1.0/installing.html)
-* [Community Guides](https://pterodactyl.io/community/about.html)
-* Or, get additional help [via Discord](https://discord.gg/pterodactyl)
+The PHP CLI package supplies core extensions such as PDO, OpenSSL, Tokenizer, and POSIX on Ubuntu. Check the PHP version with `php -v`. Install Composer 2 from the [official Composer instructions](https://getcomposer.org/download/) if the package manager did not provide Composer 2.
 
-## Sponsors
+### 2. Create the database
 
-I would like to extend my sincere thanks to the following sponsors for helping fund Pterodactyl's development.
-[Interested in becoming a sponsor?](https://github.com/sponsors/pterodactyl)
+Open the MariaDB shell:
 
-| Company                                                                           | About                                                                                                                                                                                                                                           |
-|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [**Buildurly**](https://buildurly.com/)                                           | Buildurly is a hardware procurement company. They deliver tailored, enterprise-grade hardware solutions designed around your unique needs. From sourcing to delivery, Buildurly's white-glove service ensures a seamless, worry-free, professional experience.                                                                                                                                          |
-| [**Hosturly**](https://hosturly.com/)                                             | Hosturly is an enterprise hosting provider. They provide cost-effective, high-performance, and reliable services, including VPS, Web, Dedicated, and Colocation.                                                                                |
-| [**indifferent broccoli**](https://indifferentbroccoli.com/)                      | indifferent broccoli is a game server hosting and rental company. With them, you get top-notch computer power for your gaming sessions. They destroy lag, latency, and complexity--letting you focus on the fun stuff.                         |
-| [**Infraly, LLC**](https://infraly.co/)                                           | Infraly is an infrastructure company powering the next generation of online services. Through their brands, Infraly delivers cutting-edge solutions across multiple markets. Their vertically integrated approach provides unmatched performance, scalability, and reliability, giving our customers full control.                                                                                     |
-| [**MineStrator**](https://minestrator.com/)                                       | MineStrator is a game server hosting provider. Looking for the most high-end French hosting company for your Minecraft server? More than 24,000 members on our Discord trust us. Give us a try!                                                |
-| [**Physgun**](https://physgun.com/)                                               | Physgun is a game server hosting provider. Most providers rent rack space and rebrand a panel. At Physgun, they engineer the performance, write the features, and staff the support. Physgun truly is game hosting perfected!                   |
-| [**WISP**](https://wisp.gg/)                                                      | WISP is an industry-leading SaaS platform for game server management, designed for hosting companies, gaming organizations, and enthusiasts. WISP combines modern, intuitive interfaces with powerful tools, making server deployment and administration seamless, scalable, and efficient.                                                                                                                 |
+```bash
+sudo mariadb
+```
 
+Create a database and a dedicated account. Replace the example password with a unique, long password, then exit the MariaDB shell:
 
-### Supported Games
+```sql
+CREATE DATABASE panel;
+CREATE USER 'pterodactyl'@'127.0.0.1' IDENTIFIED BY 'REPLACE_WITH_A_LONG_RANDOM_PASSWORD';
+GRANT ALL PRIVILEGES ON panel.* TO 'pterodactyl'@'127.0.0.1';
+FLUSH PRIVILEGES;
+EXIT;
+```
 
-Pterodactyl supports a wide variety of games by utilizing Docker containers to isolate each instance. This gives
-you the power to run game servers without bloating machines with a host of additional dependencies.
+### 3. Download this fork and install PHP dependencies
 
-Some of our core supported games include:
+```bash
+sudo mkdir -p /var/www/pterodactyl
+sudo chown "$USER":"$USER" /var/www/pterodactyl
+git clone https://github.com/NoxCoreDev/Noxhostingtheme.git /var/www/pterodactyl
+cd /var/www/pterodactyl
 
-* Minecraft — including Paper, Sponge, Bungeecord, Waterfall, and more
-* Rust
-* Terraria
-* Teamspeak
-* Mumble
-* Team Fortress 2
-* Counter Strike: Global Offensive
-* Garry's Mod
-* ARK: Survival Evolved
+cp .env.example .env
+composer install --no-dev --optimize-autoloader
+chmod -R 755 storage/* bootstrap/cache/
+```
 
-In addition to our standard nest of supported games, our community is constantly pushing the limits of this software
-and there are plenty more games available provided by the community. Some of these games include:
+If you are deploying a reviewed commit instead of the current branch, check out that commit before running Composer. Do not use `git pull` blindly on a live installation; back up first and follow the upstream upgrade instructions.
 
-* Factorio
-* San Andreas: MP
-* Pocketmine MP
-* Squad
-* Xonotic
-* Starmade
-* Discord ATLBot, and most other Node.js/Python discord bots
-* [and many more...](https://eggs.pterodactyl.io)
+### 4. Configure the application and database
 
-## License
+Generate the application key **only for a brand-new installation**, then complete the interactive setup:
 
-Pterodactyl® Copyright © 2015 - 2022 Dane Everitt and contributors.
+```bash
+php artisan key:generate --force
+php artisan p:environment:setup
+php artisan p:environment:database
+php artisan p:environment:mail
+```
 
-Code released under the [MIT License](./LICENSE.md).
+Use `https://panel.example.com` as the application URL when prompted. Enter the database name `panel`, username `pterodactyl`, and the password created above. Configure SMTP if you need password resets or system email.
+
+Back up the `APP_KEY` stored in `.env` together with your database backups. Never regenerate the key on an existing installation: encrypted data may become unreadable.
+
+### 5. Create the database tables and administrator
+
+```bash
+php artisan migrate --seed --force
+php artisan p:user:make
+```
+
+Follow the prompts to create the first administrator account.
+
+### 6. Set file permissions and configure HTTPS
+
+For a standard Ubuntu Nginx installation, give the web-server account access to the Panel files:
+
+```bash
+sudo chown -R www-data:www-data /var/www/pterodactyl
+```
+
+Configure Nginx to serve `/var/www/pterodactyl/public`, use PHP-FPM 8.3, and enable HTTPS with a valid certificate for your domain. Follow the [official Nginx web-server configuration guide](https://pterodactyl.io/panel/1.0/webserver_configuration.html); create the certificate before enabling an SSL configuration. Verify your DNS points to the VPS and that ports 80 and 443 are allowed by both the VPS firewall and provider firewall.
+
+### 7. Enable scheduled tasks and the queue worker
+
+Add the Panel scheduler to root's crontab by running `sudo crontab -e` and adding:
+
+```cron
+* * * * * php /var/www/pterodactyl/artisan schedule:run >> /dev/null 2>&1
+```
+
+Create `/etc/systemd/system/pteroq.service` with the following contents:
+
+```ini
+[Unit]
+Description=Pterodactyl Queue Worker
+After=redis-server.service
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+ExecStart=/usr/bin/php /var/www/pterodactyl/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable the worker:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now pteroq.service
+```
+
+The Panel should now be reachable at your configured domain. Check Nginx, PHP-FPM, Redis, and the queue worker logs if something does not start.
+
+## Run game servers with Wings
+
+Installing the Panel alone does **not** start game servers. Install Docker and the matching Pterodactyl 1.x version of Wings on a Linux node, create that node in the Panel's administrator area, and apply its generated Wings configuration. Follow the [official Wings guide](https://pterodactyl.io/wings/1.0/installing.html) and the [Panel documentation](https://pterodactyl.io/panel/1.0/getting_started.html). Confirm that Docker is supported by your VPS provider; KVM virtualization is the safest choice. Open only the allocation and service ports you intend to use.
+
+## Optional: rebuild the frontend
+
+A normal server installation can use the compiled files already tracked under `public/assets`. Rebuild them only when developing or changing the frontend. The repository requires Node.js 22 or newer; from the repository directory, install the project's Yarn dependencies and run:
+
+```bash
+yarn install --frozen-lockfile
+yarn build:production
+```
+
+## NOX HOSTING theme terms
+
+The NOX HOSTING design, artwork, logo, and theme changes are covered by [`LICENSE-NOX-HOSTING.md`](./LICENSE-NOX-HOSTING.md). The license permits free use of the theme on your own Pterodactyl Panel and requires keeping the **“NOX HOSTING by NoxCoreDev”** footer credit. It does not permit selling the theme or logo, removing the credit, or presenting the NOX HOSTING brand as your own. Pterodactyl and Laravel remain subject to their respective licenses; see [`NOTICE.md`](./NOTICE.md) and [`LICENSE.md`](./LICENSE.md).
+
+## Documentation and support
+
+- [Pterodactyl Panel installation and configuration](https://pterodactyl.io/panel/1.0/getting_started.html)
+- [Pterodactyl Nginx configuration](https://pterodactyl.io/panel/1.0/webserver_configuration.html)
+- [Pterodactyl Wings installation](https://pterodactyl.io/wings/1.0/installing.html)
+- [Pterodactyl community and support](https://discord.gg/pterodactyl)
+- [This fork on GitHub](https://github.com/NoxCoreDev/Noxhostingtheme)
